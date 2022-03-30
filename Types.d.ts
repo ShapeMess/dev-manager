@@ -5,6 +5,7 @@ export type Messages = {
     processClosed?: string
     processForceClosed?: string
     processRestarting?: string
+    processSpawning?: string
 
     startSequenceError?: string
     startProcessSuccess?: string

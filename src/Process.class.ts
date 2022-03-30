@@ -5,7 +5,7 @@ import EventProxy from './EventProxy.class';
 import treeKill from 'tree-kill';
 
 import type cp from 'child_process'
-import type * as T from './Types'
+import type * as T from '../Types'
 
 export interface Options extends cp.SpawnOptions {
     name: string
@@ -16,7 +16,6 @@ export default class Process {
 
     declare public process: cp.ChildProcess;
     declare public alive: boolean;
-    public preventCloseEvent = false;
     public restarted = false;
 
     public onClose = new EventProxy<never>();
@@ -37,6 +36,8 @@ export default class Process {
         this.$spawn(command, argv, options);
         this.$registerEvents();
 
+        this.onClose.set(() => console.error(c.redBright(this.$msg.processClosed?.replace('%s', `"${this.$spawnOptions!.name}"`))));
+
     }
 
     private $spawn(command: string, argv: string[], options?: cp.SpawnOptions & Options) {
@@ -55,14 +56,11 @@ export default class Process {
             this.alive = true;
             this.onSpawn.emit();
             // Allow close events in case the process was restarted.
-            this.preventCloseEvent = false;
+            this.onClose.paused = false;
         });
 
         this.process.on('close', () => {
-            if (!this.preventCloseEvent) {
-                console.error(c.redBright(this.$msg.processClosed?.replace('%s', `"${this.$spawnOptions!.name}"`)));
-                this.onClose.emit();
-            }
+            this.onClose.emit();
         });
     }
 
@@ -71,7 +69,7 @@ export default class Process {
         try {
 
             console.log(c.yellow(this.$msg.processRestarting?.replace('%s', this.$spawnOptions.name)));
-            this.preventCloseEvent = true;
+            this.onClose.paused = true;
 
             treeKill(this.process.pid!, (err) => {
                 if (err) console.error(err)

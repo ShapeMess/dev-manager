@@ -6,7 +6,7 @@ import treeKill from 'tree-kill';
 import c from 'chalk';
 
 import type cp from 'child_process';
-import type * as T from './Types';
+import type * as T from '../Types';
 
 interface ProcessInitPram {
     /**
@@ -35,11 +35,12 @@ interface ProcessInitPram {
 }
 
 const defaultMessages: T.Messages = {
+    processSpawning: 'Spawning "%s"',
     processClosed: '%s closed unexpectedly',
     processForceClosed: 'Killed process %s',
-
     processRestarting: 'Restarting process "%s".',
-    startSequenceError: 'An error had accured while spawning child processes:',
+
+    startSequenceError: 'An error had accured while spawning child processes.',
 
     startProcessSuccess: 'Successfully spawned all child processes.',
     managerExit: 'Closing the process manager.'
@@ -71,6 +72,9 @@ export default class Manager {
 
         const spawnProcess = (processInit: ProcessInitPram) => new Promise<void>((resolve, reject) => {
             try {
+
+                console.log(c.yellowBright(this.messages.processSpawning?.replace('%s', processInit.name)))
+
                 let argv = processInit.command.split(' ');
                 let command = <string>argv.shift();
     
@@ -86,7 +90,7 @@ export default class Manager {
                     // Exit the main process if the child childs dies
                     process.onClose.set(() => {});
                     // Prevent child from emitting the close event if the manager is closing to prevent multiple exit calls
-                    this.closing.set((isClosing) => process.preventCloseEvent = isClosing);
+                    this.closing.set((isClosing) => process.onClose.paused = isClosing);
     
                     this.process[processInit.name] = process;
 
