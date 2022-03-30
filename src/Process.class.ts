@@ -60,6 +60,7 @@ export default class Process {
         });
 
         this.process.on('close', () => {
+            this.alive = false;
             this.onClose.emit();
         });
     }
