@@ -88,7 +88,7 @@ export default class Manager {
                 // Spawn processes one by one to avoid some errors
                 process.onSpawn.set(() => {
                     // Exit the main process if the child childs dies
-                    process.onClose.set(() => {});
+                    process.onClose.set(() => this.exit());
                     // Prevent child from emitting the close event if the manager is closing to prevent multiple exit calls
                     this.closing.set((isClosing) => process.onClose.paused = isClosing);
     
@@ -161,11 +161,16 @@ export default class Manager {
                 else {
                     let i = counter++;
                     const pid = <number>this.process[p[i]].process.pid;
-                    treeKill(pid, (err) => {
-                        if (err) console.error(err);
-                        else console.log(c.redBright(this.messages.processForceClosed!.replace('%s', `"${p[i]}"`)))
-                        kill();
-                    });
+                    
+                    // Only attempt to kile alive procsses to prevent taskkill error
+                    if (this.process[p[i]].alive) {
+                        treeKill(pid, (err) => {
+                            if (err) console.error(err);
+                            else console.log(c.redBright(this.messages.processForceClosed!.replace('%s', `"${p[i]}"`)))
+                            kill();
+                        });
+                    }
+                    else kill();
                 }
             }
     

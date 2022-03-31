@@ -8,7 +8,8 @@
   "private": false,
   "scripts": {
     "test1": "node test/test1.js",
-    "test2": "node test/process1.js"
+    "test2": "node test/process1.js",
+    "test3": "node test/process2.js"
   },
   "dependencies": {
     "chalk": "4.1.2",
