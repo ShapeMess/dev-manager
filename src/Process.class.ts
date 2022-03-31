@@ -65,18 +65,37 @@ export default class Process {
         });
     }
 
-
     public restart = () => new Promise<void>((resolve, reject) => {
         try {
 
-            console.log(c.yellow(this.$msg.processRestarting?.replace('%s', this.$spawnOptions.name)));
             this.onClose.paused = true;
 
             treeKill(this.process.pid!, (err) => {
                 if (err) console.error(err)
                 else {
+                    console.log(c.yellow(this.$msg.processRestarting?.replace('%s', this.$spawnOptions.name)));
                     this.$spawn(this.$spawnCommand, this.$spawnArgv, this.$spawnOptions);
                     this.$registerEvents();
+                    resolve();
+                }
+            }); 
+
+        } 
+        catch (err) {
+            console.log(err);
+            reject();
+        }
+    })
+
+    public killSilent = () => new Promise<void>((resolve, reject) => {
+        try {
+
+            this.onClose.paused = true;
+
+            treeKill(this.process.pid!, (err) => {
+                if (err) console.error(err)
+                else {
+                    console.log(c.yellow(this.$msg.processForceClosed?.replace('%s', this.$spawnOptions.name)));
                     resolve();
                 }
             }); 
