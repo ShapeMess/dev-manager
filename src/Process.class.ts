@@ -16,6 +16,7 @@ export default class Process {
 
     declare public process: cp.ChildProcess;
     declare public alive: boolean;
+    public status?: 'alive'|'dead'|'terminated';
     public restarted = false;
 
     public onClose = new EventProxy<never>();
@@ -54,6 +55,7 @@ export default class Process {
 
         this.process.on('spawn', () => {
             this.alive = true;
+            this.status = 'alive';
             this.onSpawn.emit();
             // Allow close events in case the process was restarted.
             this.onClose.paused = false;
@@ -61,6 +63,7 @@ export default class Process {
 
         this.process.on('close', () => {
             this.alive = false;
+            if (this.status !== 'terminated') this.status = 'dead';
             this.onClose.emit();
         });
     }
@@ -96,6 +99,7 @@ export default class Process {
                 if (err) console.error(err)
                 else {
                     console.log(c.yellow(this.$msg.processForceClosed?.replace('%s', this.$spawnOptions.name)));
+                    this.status = 'terminated';
                     resolve();
                 }
             }); 
