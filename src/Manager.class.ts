@@ -161,9 +161,10 @@ export default class Manager {
     /**
      * Attempts to revive a script of a given name.
      */
-    public revive = (scriptName: string): "success"|"unknown_name" => {
+    public revive = (scriptName: string): "success"|"unknown_name"|"not_terminated" => {
         if (this.process[scriptName]) {
-            this.process[scriptName].revive();
+            if (this.process[scriptName].status === 'terminated') this.process[scriptName].revive();
+            else return 'not_terminated';
             return 'success';
         }
         else return 'unknown_name';
