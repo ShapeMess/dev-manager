@@ -90,6 +90,11 @@ export default class Process {
         }
     })
 
+    public revive = () => {
+        this.$spawn(this.$spawnCommand, this.$spawnArgv, this.$spawnOptions);
+        this.$registerEvents();
+    }
+
     public killSilent = () => new Promise<void>((resolve, reject) => {
         try {
 

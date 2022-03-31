@@ -157,6 +157,17 @@ export default class Manager {
             resolve("failed");
         }
     });
+    
+    /**
+     * Attempts to revive a script of a given name.
+     */
+    public revive = (scriptName: string): "success"|"unknown_name" => {
+        if (this.process[scriptName]) {
+            this.process[scriptName].revive();
+            return 'success';
+        }
+        else return 'unknown_name';
+    }
 
     /**
      * Kills all the child processes and exits.
