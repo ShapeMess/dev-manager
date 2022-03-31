@@ -127,10 +127,27 @@ export default class Manager {
     /**
      * Reloads a script of a given name without restarting the entire master process.
      */
-    public restart = (scriptName: string) => new Promise<"success"|"failed"|"unknown_name">(async (resolve) => {
+     public restart = (scriptName: string) => new Promise<"success"|"failed"|"unknown_name">(async (resolve) => {
         try {
             if (this.process[scriptName]) {
                 await this.process[scriptName].restart();
+                resolve('success')
+            }
+            else resolve("unknown_name");
+        } 
+        catch (err) {
+            console.error(err);
+            resolve("failed");
+        }
+    });
+    
+    /**
+     * Terminates a script of a given name without restarting the entire master process.
+     */
+    public terminate = (scriptName: string) => new Promise<"success"|"failed"|"unknown_name">(async (resolve) => {
+        try {
+            if (this.process[scriptName]) {
+                await this.process[scriptName].killSilent();
                 resolve('success')
             }
             else resolve("unknown_name");
