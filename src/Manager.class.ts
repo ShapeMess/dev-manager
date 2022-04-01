@@ -38,8 +38,8 @@ const defaultMessages: T.Messages = {
     processSpawning: 'Spawning "%s"',
     processSpawned: 'Process "%s" started.',
     processRespawning: 'Reviving process "%s".',
-    processClosed: '%s closed unexpectedly',
-    processForceClosed: 'Killed process "%s."',
+    processClosed: 'Process "%s" closed unexpectedly',
+    processForceClosed: 'Killed process "%s".',
     processRestarting: 'Restarting process "%s".',
 
     startSequenceError: 'An error had accured while spawning child processes.',
@@ -202,7 +202,7 @@ export default class Manager {
                     if (this.process[p[i]].alive) {
                         treeKill(pid, (err) => {
                             if (err) console.error(err);
-                            else console.log(c.redBright(this.messages.processForceClosed!.replace('%s', `"${p[i]}"`)))
+                            else console.log(c.redBright(this.messages.processForceClosed!.replace('%s', p[i])))
                             kill();
                         });
                     }
