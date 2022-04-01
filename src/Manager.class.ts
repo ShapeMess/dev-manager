@@ -36,8 +36,10 @@ interface ProcessInitPram {
 
 const defaultMessages: T.Messages = {
     processSpawning: 'Spawning "%s"',
+    processSpawned: 'Process "%s" started.',
+    processRespawning: 'Reviving process "%s".',
     processClosed: '%s closed unexpectedly',
-    processForceClosed: 'Killed process %s',
+    processForceClosed: 'Killed process "%s."',
     processRestarting: 'Restarting process "%s".',
 
     startSequenceError: 'An error had accured while spawning child processes.',
@@ -78,7 +80,7 @@ export default class Manager {
                 let argv = processInit.command.split(' ');
                 let command = <string>argv.shift();
     
-                // Spawn a process;
+                // Spawn a process
                 const process = new Process(command, argv, {
                     ...processInit.options,
                     name: processInit.name,
@@ -87,19 +89,24 @@ export default class Manager {
 
                 // Spawn processes one by one to avoid some errors
                 process.onSpawn.set(() => {
-                    // Exit the main process if the child childs dies
-                    process.onClose.set(() => this.exit());
-                    // Prevent child from emitting the close event if the manager is closing to prevent multiple exit calls
-                    this.closing.set((isClosing) => process.onClose.paused = isClosing);
-    
-                    this.process[processInit.name] = process;
+                    
+                    // Log to console that the process had started.
+                    console.log(c.yellowBright(this.messages.processSpawned?.replace('%s', processInit.name)));
 
-                    // Perform checks if the script was started for the first time
+                    // Don't do anything if the process had been restarted.
                     if (!process.restarted) {
+                        // Exit the main process if the child childs dies
+                        process.onClose.set(() => this.exit());
+                        // Prevent child from emitting the close event if the manager is closing to prevent multiple exit calls
+                        this.closing.set((isClosing) => process.onClose.paused = isClosing);
+        
+                        this.process[processInit.name] = process;
+
                         // Spawn the next process if all others are alive
                         if (this.closing.value === false) resolve();
                         // If one of them had died
                         else reject();
+                        
                     }
                 })
             }
@@ -127,7 +134,7 @@ export default class Manager {
     /**
      * Reloads a script of a given name without restarting the entire master process.
      */
-     public restart = (scriptName: string) => new Promise<"success"|"failed"|"unknown_name">(async (resolve) => {
+    public restart = (scriptName: string) => new Promise<"success"|"failed"|"unknown_name">(async (resolve) => {
         try {
             if (this.process[scriptName]) {
                 await this.process[scriptName].restart();
@@ -167,7 +174,7 @@ export default class Manager {
             else return 'not_terminated';
             return 'success';
         }
-        else return 'unknown_name';
+        return 'unknown_name';
     }
 
     /**

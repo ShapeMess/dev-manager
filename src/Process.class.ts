@@ -37,7 +37,7 @@ export default class Process {
         this.$spawn(command, argv, options);
         this.$registerEvents();
 
-        this.onClose.set(() => console.error(c.redBright(this.$msg.processClosed?.replace('%s', `"${this.$spawnOptions!.name}"`))));
+        this.onClose.set(() => console.error(c.redBright(this.$msg.processClosed?.replace('%s', this.$spawnOptions!.name))));
 
     }
 
@@ -72,6 +72,7 @@ export default class Process {
         try {
 
             this.onClose.paused = true;
+            this.restarted = true;
 
             treeKill(this.process.pid!, (err) => {
                 if (err) console.error(err)
@@ -82,7 +83,6 @@ export default class Process {
                     resolve();
                 }
             }); 
-
         } 
         catch (err) {
             console.log(err);
@@ -91,6 +91,7 @@ export default class Process {
     })
 
     public revive = () => {
+        this.restarted = true;
         this.$spawn(this.$spawnCommand, this.$spawnArgv, this.$spawnOptions);
         this.$registerEvents();
     }
@@ -108,7 +109,6 @@ export default class Process {
                     resolve();
                 }
             }); 
-
         } 
         catch (err) {
             console.log(err);
